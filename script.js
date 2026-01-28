@@ -154,28 +154,45 @@ function addOutline(geojson) {
 function addTerritories(geojson) {
   territories = [];
 
+  function addTerritories(geojson) {
+  territories = [];
+
   territoriesLayer = L.geoJSON(geojson, {
-    style: {
-      color: "#ffffff",
-      weight: 1,
-      opacity: 0.6,
-      fillColor: "#ffffff",
-      fillOpacity: 0.03
+    style: feature => {
+      if (!hasValidMapName(feature)) {
+        // shared / liminal territory
+        return {
+          stroke: false,
+          fillOpacity: 0   // invisible
+        };
+      }
+
+      return {
+        color: "#ffffff",
+        weight: 0.7,
+        opacity: 0.6,
+        fillColor: "#ffffff",
+        fillOpacity: 0.03,
+        lineJoin: "miter",
+        lineCap: "butt"
+      };
     },
+
     onEachFeature: (feature, layer) => {
-      const name = feature.properties?.[TRIBE_NAME_FIELD];
+      if (!hasValidMapName(feature)) {
+        // optional: tooltip for learn mode later
+        return;
+      }
 
-      if (!name) return;
-
+      const name = feature.properties.mapname.trim();
       const entry = { feature, layer, name };
 
-      layer.bindTooltip(name, { sticky: true });
       layer.on("click", () => onTerritoryClick(entry));
-
       territories.push(entry);
     }
   }).addTo(map);
 }
+
 
 // ===============================
 // UI WIRING
