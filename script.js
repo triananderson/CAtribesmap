@@ -152,7 +152,9 @@ function initMap() {
     zoomControl: true,
     scrollWheelZoom: true
   });
-
+  const el = document.getElementById("map");
+  if (el) el.style.background = "#0b0f14";
+  
   // No basemap. Give a visible background and a fallback view.
   const el = document.getElementById("map");
   if (el) el.style.background = "#0b0f14";
