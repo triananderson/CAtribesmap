@@ -133,11 +133,11 @@ async function loadGeoJSON(url) {
 function initMap() {
   map = L.map("map");
 
-  L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    { attribution: "&copy; OpenStreetMap &copy; CARTO" }
-  ).addTo(map);
-}
+//  L.tileLayer(
+//    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+//    { attribution: "&copy; OpenStreetMap &copy; CARTO" }
+//  ).addTo(map);
+//}
 
 function addOutline(geojson) {
   outlineLayer = L.geoJSON(geojson, {
