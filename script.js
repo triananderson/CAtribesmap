@@ -152,59 +152,19 @@ function initMap() {
     zoomControl: true,
     scrollWheelZoom: true
   });
+
+  // No basemap, just a visible background and a fallback view.
   const el = document.getElementById("map");
   if (el) el.style.background = "#0b0f14";
-  
-  // No basemap. Give a visible background and a fallback view.
-  const el = document.getElementById("map");
-  if (el) el.style.background = "#0b0f14";
+
   map.setView([37.25, -119.5], 6);
-}
 
-function addOutline(geojson) {
-  outlineLayer = L.geoJSON(geojson, {
-    style: {
-      color: "#ffffff",
-      weight: 2,
-      opacity: 0.9,
-      fillOpacity: 0,
-      lineJoin: "miter",
-      lineCap: "butt"
-    }
-  }).addTo(map);
-
-  map.fitBounds(outlineLayer.getBounds(), { padding: [20, 20] });
-}
-
-function addTerritories(geojson) {
-  territories = [];
-
-  territoriesLayer = L.geoJSON(geojson, {
-    style: feature => {
-      if (!hasValidMapName(feature)) {
-        // shared / liminal territory: hide completely for gameplay
-        return { stroke: false, fillOpacity: 0 };
-      }
-      return {
-        color: "#ffffff",
-        weight: 0.7,
-        opacity: 0.6,
-        fillColor: "#ffffff",
-        fillOpacity: 0.03,
-        lineJoin: "miter",
-        lineCap: "butt"
-      };
-    },
-
-    onEachFeature: (feature, layer) => {
-      if (!hasValidMapName(feature)) return;
-
-      const name = String(feature.properties[TRIBE_NAME_FIELD]).trim();
-      const entry = { feature, layer, name };
-
-      layer.on("click", () => onTerritoryClick(entry));
-      territories.push(entry);
-    }
+  // DEBUG DOT (San Francisco)
+  L.circleMarker([37.7749, -122.4194], {
+    radius: 6,
+    color: "#ff00ff",
+    weight: 2,
+    fillOpacity: 1
   }).addTo(map);
 }
 
