@@ -260,8 +260,8 @@ async function main() {
 
   try {
     const [outline, tribes] = await Promise.all([
-      loadGeoJSON("./data/ca_outline.geojson?v=26"),
-      loadGeoJSON("./data/ca_tribes.geojson?v=26")
+      loadGeoJSON("./data/ca_outline.geojson?v=27"),
+      loadGeoJSON("./data/ca_tribes.geojson?v=27")
     ]);
 
     addOutline(outline);
