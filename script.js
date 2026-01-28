@@ -3,7 +3,7 @@
 // ===============================
 
 const TRIBE_NAME_FIELD = "mapname";
-const MAX_STRIKES = 1; // game ends on first wrong click
+const MAX_STRIKES = 1;
 
 // ===============================
 // STATE
@@ -13,7 +13,7 @@ let map;
 let territoriesLayer;
 let outlineLayer;
 
-let territories = []; // { feature, name, layer }
+let territories = [];
 let currentTarget = null;
 let score = 0;
 let strikes = 0;
@@ -67,24 +67,18 @@ function resetStyles() {
 }
 
 function highlight(layer, type) {
+  const base = {
+    weight: 2,
+    opacity: 0.9,
+    fillOpacity: 0.15,
+    lineJoin: "miter",
+    lineCap: "butt"
+  };
+
   if (type === "correct") {
-    layer.setStyle({
-      color: "#3fb950",
-      weight: 2,
-      opacity: 0.9,
-      fillOpacity: 0.15,
-      lineJoin: "miter",
-      lineCap: "butt"
-    });
+    layer.setStyle({ ...base, color: "#3fb950" });
   } else {
-    layer.setStyle({
-      color: "#ff6b6b",
-      weight: 2,
-      opacity: 0.9,
-      fillOpacity: 0.15,
-      lineJoin: "miter",
-      lineCap: "butt"
-    });
+    layer.setStyle({ ...base, color: "#ff6b6b" });
   }
 }
 
@@ -153,10 +147,10 @@ function initMap() {
     scrollWheelZoom: true
   });
 
-  // No basemap, just a visible background and a fallback view.
   const el = document.getElementById("map");
   if (el) el.style.background = "#0b0f14";
 
+  // Fallback view on CA
   map.setView([37.25, -119.5], 6);
 
   // DEBUG DOT (San Francisco)
@@ -165,6 +159,51 @@ function initMap() {
     color: "#ff00ff",
     weight: 2,
     fillOpacity: 1
+  }).addTo(map);
+}
+
+function addOutline(geojson) {
+  outlineLayer = L.geoJSON(geojson, {
+    style: {
+      color: "#ffffff",
+      weight: 2,
+      opacity: 0.9,
+      fillOpacity: 0,
+      lineJoin: "miter",
+      lineCap: "butt"
+    }
+  }).addTo(map);
+
+  map.fitBounds(outlineLayer.getBounds(), { padding: [20, 20] });
+}
+
+function addTerritories(geojson) {
+  territories = [];
+
+  territoriesLayer = L.geoJSON(geojson, {
+    style: feature => {
+      if (!hasValidMapName(feature)) {
+        return { stroke: false, fillOpacity: 0 };
+      }
+      return {
+        color: "#ffffff",
+        weight: 0.7,
+        opacity: 0.6,
+        fillColor: "#ffffff",
+        fillOpacity: 0.03,
+        lineJoin: "miter",
+        lineCap: "butt"
+      };
+    },
+    onEachFeature: (feature, layer) => {
+      if (!hasValidMapName(feature)) return;
+
+      const name = String(feature.properties[TRIBE_NAME_FIELD]).trim();
+      const entry = { feature, layer, name };
+
+      layer.on("click", () => onTerritoryClick(entry));
+      territories.push(entry);
+    }
   }).addTo(map);
 }
 
@@ -202,8 +241,8 @@ async function main() {
 
   try {
     const [outline, tribes] = await Promise.all([
-      loadGeoJSON("./data/ca_outline.geojson?v=5"),
-      loadGeoJSON("./data/ca_tribes.geojson?v=5")
+      loadGeoJSON("./data/ca_outline.geojson?v=20"),
+      loadGeoJSON("./data/ca_tribes.geojson?v=20")
     ]);
 
     addOutline(outline);
