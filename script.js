@@ -3,7 +3,7 @@
 // ===============================
 
 const TRIBE_NAME_FIELD = "mapname";
-const MAX_STRIKES = 1;
+const MAX_STRIKES = 3;
 
 // ===============================
 // STATE
