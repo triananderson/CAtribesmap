@@ -160,7 +160,7 @@ function initMap() {
   //  weight: 2,
   //  fillOpacity: 1
   //}).addTo(map);
-//}
+}
 
 function addOutline(geojson) {
   outlineLayer = L.geoJSON(geojson, {
