@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CA Outline Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+      background: #111;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  // Create the map with no basemap
+  const map = L.map("map", {
+    zoomControl: true
+  });
+
+  // Load CA outline only
+  fetch("./data/ca_outline.geojson")
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Failed to load ca_outline.geojson");
+      }
+      return res.json();
+    })
+    .then(geojson => {
+      const outline = L.geoJSON(geojson, {
+        style: {
+          color: "#00ffcc",
+          weight: 3,
+          fillOpacity: 0
+        }
+      }).addTo(map);
+
+      map.fitBounds(outline.getBounds(), { padding: [20, 20] });
+
+      console.log("Outline bounds:", outline.getBounds());
+    })
+    .catch(err => {
+      console.error(err);
+      alert(err.message);
+    });
+</script>
+
+</body>
+</html>
