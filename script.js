@@ -154,13 +154,13 @@ function initMap() {
   map.setView([37.25, -119.5], 6);
 
   // DEBUG DOT (San Francisco)
-  L.circleMarker([37.7749, -122.4194], {
-    radius: 6,
-    color: "#ff00ff",
-    weight: 2,
-    fillOpacity: 1
-  }).addTo(map);
-}
+  //L.circleMarker([37.7749, -122.4194], {
+  //  radius: 6,
+  //  color: "#ff00ff",
+  //  weight: 2,
+  //  fillOpacity: 1
+  //}).addTo(map);
+//}
 
 function addOutline(geojson) {
   outlineLayer = L.geoJSON(geojson, {
