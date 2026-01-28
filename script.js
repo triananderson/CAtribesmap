@@ -216,6 +216,7 @@ async function main() {
     ]);
 
     addOutline(outline);
+    console.log("Outline bounds:", outlineLayer.getBounds());
     addTerritories(tribes);
     startGame();
   } catch (err) {
