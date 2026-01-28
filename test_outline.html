@@ -36,7 +36,7 @@
   });
 
   // Load CA outline only
-  fetch("./data/ca_outline.geojson")
+  fetch("./data/ca_outline.geojson??")
     .then(res => {
       if (!res.ok) {
         throw new Error("Failed to load ca_outline.geojson");
