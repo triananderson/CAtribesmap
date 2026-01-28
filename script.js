@@ -2,7 +2,7 @@
 // CONFIG
 // ===============================
 
-const TRIBE_NAME_FIELD = "mapname"; // 
+const TRIBE_NAME_FIELD = "mapname";
 const MAX_STRIKES = 1; // game ends on first wrong click
 
 // ===============================
@@ -20,15 +20,22 @@ let strikes = 0;
 let gameOver = false;
 
 // ===============================
+// HELPERS
+// ===============================
+
+function hasValidMapName(feature) {
+  const name = feature.properties?.[TRIBE_NAME_FIELD];
+  return name && String(name).trim().length > 0;
+}
+
+// ===============================
 // UI HELPERS
 // ===============================
 
 function setHUD() {
-  document.getElementById("prompt").textContent = currentTarget
-    ? currentTarget.name
-    : "—";
-  document.getElementById("score").textContent = score;
-  document.getElementById("strikes").textContent = strikes;
+  document.getElementById("prompt").textContent = currentTarget ? currentTarget.name : "—";
+  document.getElementById("score").textContent = String(score);
+  document.getElementById("strikes").textContent = String(strikes);
 }
 
 function showOverlay(title, msg) {
@@ -49,10 +56,12 @@ function resetStyles() {
   territories.forEach(t => {
     t.layer.setStyle({
       color: "#ffffff",
-      weight: 1,
+      weight: 0.7,
       opacity: 0.6,
       fillColor: "#ffffff",
-      fillOpacity: 0.03
+      fillOpacity: 0.03,
+      lineJoin: "miter",
+      lineCap: "butt"
     });
   });
 }
@@ -63,14 +72,18 @@ function highlight(layer, type) {
       color: "#3fb950",
       weight: 2,
       opacity: 0.9,
-      fillOpacity: 0.15
+      fillOpacity: 0.15,
+      lineJoin: "miter",
+      lineCap: "butt"
     });
   } else {
     layer.setStyle({
       color: "#ff6b6b",
       weight: 2,
       opacity: 0.9,
-      fillOpacity: 0.15
+      fillOpacity: 0.15,
+      lineJoin: "miter",
+      lineCap: "butt"
     });
   }
 }
@@ -80,6 +93,12 @@ function highlight(layer, type) {
 // ===============================
 
 function chooseNextTarget() {
+  if (territories.length === 0) {
+    currentTarget = null;
+    setHUD();
+    showOverlay("No playable territories", `No features had a non-empty "${TRIBE_NAME_FIELD}".`);
+    return;
+  }
   const idx = Math.floor(Math.random() * territories.length);
   currentTarget = territories[idx];
   setHUD();
@@ -104,8 +123,6 @@ function onTerritoryClick(clicked) {
     highlight(clicked.layer, "wrong");
     highlight(currentTarget.layer, "correct");
 
-    setHUD();
-
     if (strikes >= MAX_STRIKES) {
       endGame(
         `Wrong selection. You clicked "${clicked.name}", but the correct territory was "${currentTarget.name}".`
@@ -122,7 +139,7 @@ function onTerritoryClick(clicked) {
 
 async function loadGeoJSON(url) {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to load ${url}`);
+  if (!res.ok) throw new Error(`Failed to load ${url} (status ${res.status})`);
   return res.json();
 }
 
@@ -131,20 +148,26 @@ async function loadGeoJSON(url) {
 // ===============================
 
 function initMap() {
-  map = L.map("map");
+  map = L.map("map", {
+    zoomControl: true,
+    scrollWheelZoom: true
+  });
 
-//  L.tileLayer(
-//    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-//    { attribution: "&copy; OpenStreetMap &copy; CARTO" }
-//  ).addTo(map);
-//}
+  // No basemap. Give a visible background and a fallback view.
+  const el = document.getElementById("map");
+  if (el) el.style.background = "#0b0f14";
+  map.setView([37.25, -119.5], 6);
+}
 
 function addOutline(geojson) {
   outlineLayer = L.geoJSON(geojson, {
     style: {
       color: "#ffffff",
       weight: 2,
-      fillOpacity: 0
+      opacity: 0.9,
+      fillOpacity: 0,
+      lineJoin: "miter",
+      lineCap: "butt"
     }
   }).addTo(map);
 
@@ -154,19 +177,12 @@ function addOutline(geojson) {
 function addTerritories(geojson) {
   territories = [];
 
-  function addTerritories(geojson) {
-  territories = [];
-
   territoriesLayer = L.geoJSON(geojson, {
     style: feature => {
       if (!hasValidMapName(feature)) {
-        // shared / liminal territory
-        return {
-          stroke: false,
-          fillOpacity: 0   // invisible
-        };
+        // shared / liminal territory: hide completely for gameplay
+        return { stroke: false, fillOpacity: 0 };
       }
-
       return {
         color: "#ffffff",
         weight: 0.7,
@@ -179,12 +195,9 @@ function addTerritories(geojson) {
     },
 
     onEachFeature: (feature, layer) => {
-      if (!hasValidMapName(feature)) {
-        // optional: tooltip for learn mode later
-        return;
-      }
+      if (!hasValidMapName(feature)) return;
 
-      const name = feature.properties.mapname.trim();
+      const name = String(feature.properties[TRIBE_NAME_FIELD]).trim();
       const entry = { feature, layer, name };
 
       layer.on("click", () => onTerritoryClick(entry));
@@ -192,7 +205,6 @@ function addTerritories(geojson) {
     }
   }).addTo(map);
 }
-
 
 // ===============================
 // UI WIRING
@@ -228,17 +240,16 @@ async function main() {
 
   try {
     const [outline, tribes] = await Promise.all([
-      loadGeoJSON("./data/ca_outline.geojson"),
-      loadGeoJSON("./data/ca_tribes.geojson")
+      loadGeoJSON("./data/ca_outline.geojson?v=5"),
+      loadGeoJSON("./data/ca_tribes.geojson?v=5")
     ]);
 
     addOutline(outline);
-    console.log("Outline bounds:", outlineLayer.getBounds());
     addTerritories(tribes);
     startGame();
   } catch (err) {
     console.error(err);
-    showOverlay("Error loading data", err.message);
+    showOverlay("Error loading data", err.message || String(err));
   }
 }
 
