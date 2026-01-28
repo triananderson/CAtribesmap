@@ -54,17 +54,30 @@ function hideOverlay() {
 
 function resetStyles() {
   territories.forEach(t => {
-    t.layer.setStyle({
-      color: "#ffffff",
-      weight: 0.7,
-      opacity: 0.6,
-      fillColor: "#ffffff",
-      fillOpacity: 0.03,
-      lineJoin: "miter",
-      lineCap: "butt"
-    });
+    if (t.solved) {
+      t.layer.setStyle({
+        color: "#3fb950",
+        weight: 1.5,
+        opacity: 1,
+        fillColor: "#3fb950",
+        fillOpacity: 0.8,
+        lineJoin: "miter",
+        lineCap: "butt"
+      });
+    } else {
+      t.layer.setStyle({
+        color: "#ffffff",
+        weight: 0.7,
+        opacity: 0.6,
+        fillColor: "#ffffff",
+        fillOpacity: 0.03,
+        lineJoin: "miter",
+        lineCap: "butt"
+      });
+    }
   });
 }
+
 
 function highlight(layer, type) {
   const base = {
@@ -87,14 +100,17 @@ function highlight(layer, type) {
 // ===============================
 
 function chooseNextTarget() {
-  if (territories.length === 0) {
+  const remaining = territories.filter(t => !t.solved);
+
+  if (remaining.length === 0) {
     currentTarget = null;
     setHUD();
-    showOverlay("No playable territories", `No features had a non-empty "${TRIBE_NAME_FIELD}".`);
+    showOverlay("You win!", `You identified all territories. Final score: ${score}.`);
     return;
   }
-  const idx = Math.floor(Math.random() * territories.length);
-  currentTarget = territories[idx];
+
+  const idx = Math.floor(Math.random() * remaining.length);
+  currentTarget = remaining[idx];
   setHUD();
 }
 
@@ -104,15 +120,18 @@ function endGame(reason) {
 }
 
 function onTerritoryClick(clicked) {
-  if (gameOver || !currentTarget) return;
+  if (gameOver || !currentTarget || clicked.solved) return;
 
   resetStyles();
 
   if (clicked === currentTarget) {
-    score += 1;
-    highlight(clicked.layer, "correct");
-    chooseNextTarget();
-  } else {
+  score += 1;
+  clicked.solved = true;
+
+  resetStyles();      // immediately apply solid green
+  chooseNextTarget();
+}
+ else {
     strikes += 1;
     highlight(clicked.layer, "wrong");
     highlight(currentTarget.layer, "correct");
@@ -199,7 +218,7 @@ function addTerritories(geojson) {
       if (!hasValidMapName(feature)) return;
 
       const name = String(feature.properties[TRIBE_NAME_FIELD]).trim();
-      const entry = { feature, layer, name };
+      const entry = { feature, layer, name, solved: false };
 
       layer.on("click", () => onTerritoryClick(entry));
       territories.push(entry);
@@ -241,8 +260,8 @@ async function main() {
 
   try {
     const [outline, tribes] = await Promise.all([
-      loadGeoJSON("./data/ca_outline.geojson?v=25"),
-      loadGeoJSON("./data/ca_tribes.geojson?v=25")
+      loadGeoJSON("./data/ca_outline.geojson?v=26"),
+      loadGeoJSON("./data/ca_tribes.geojson?v=26")
     ]);
 
     addOutline(outline);
