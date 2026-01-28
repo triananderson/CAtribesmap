@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>California Tribal Territories, Click Game</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">California Tribal Territories, Click Game</div>
+    <div class="hud">
+      <div><span class="label">Find:</span> <span id="prompt">Loading…</span></div>
+      <div><span class="label">Score:</span> <span id="score">0</span></div>
+      <div><span class="label">Strikes:</span> <span id="strikes">0</span></div>
+      <button id="restart">Restart</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="map"></div>
+
+    <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="overlay-card">
+        <h2 id="overlay-title">Game Over</h2>
+        <p id="overlay-msg"></p>
+        <button id="play-again">Play again</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="note">
+      Note: This game is for learning. Tribal territories can overlap and are represented differently across sources. The California Boundary came from the California open data portal. The Tribes and their approximate geographic distributions came from the Digital Atlas of California Native Americans. 
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+
+  <script src="./script.js"></script>
+</body>
+</html>
